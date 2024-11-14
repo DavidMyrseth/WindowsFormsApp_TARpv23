@@ -4,10 +4,13 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Drawing.Text;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace WindowsFormsApp_TARpv23
 {
@@ -38,6 +41,7 @@ namespace WindowsFormsApp_TARpv23
                     cmd.Parameters.AddWithValue("@toode", Nimetus_txt.Text);
                     cmd.Parameters.AddWithValue("@kogus", Kogus_txt.Text);
                     cmd.Parameters.AddWithValue("@hind", Hind_txt.Text);
+                    cmd.Parameters.AddWithValue("@pilt", Nimetus_txt.Text+extension);
                     cmd.ExecuteNonQuery();
 
                     conn.Close();
@@ -48,45 +52,9 @@ namespace WindowsFormsApp_TARpv23
                 MessageBox.Show("Sisesta andmed!");
             }
         }
-
+        // buttonDelete_Click
+        // this.toodeTableAdapter.Fill(this.windowsFormsApp_TARpv23DataSet1.Toode);
         private void buttonDelete_Click(object sender, EventArgs e)
-        {
-            // Проверим, что введен ID товара
-            if (Toode_txt.Text.Trim() != string.Empty)
-            {
-                try
-                {
-                    // Открытие соединения
-                    conn.Open();
-
-                    // Запрос на удаление записи по ID
-                    string deleteQuery = "DELETE FROM Toode WHERE ToodeID = @toodeID";
-                    cmd = new SqlCommand(deleteQuery, conn);
-                    cmd.Parameters.AddWithValue("@toodeID", Toode_txt.Text);
-
-                    // Выполнение запроса
-                    cmd.ExecuteNonQuery();
-
-                    // Закрытие соединения
-                    conn.Close();
-
-                    // Обновление данных в DataGridView (или другом контроле)
-                    this.toodeTableAdapter.Fill(this.windowsFormsApp_TARpv23DataSet1.Toode);
-
-                    MessageBox.Show("Запись успешно удалена.");
-                }
-                catch (Exception ex)
-                {
-                    // Обработка ошибок
-                    MessageBox.Show("Ошибка при удалении: " + ex.Message);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Введите ID товара для удаления.");
-            }
-        }
-        private void button2_Click(object sender, EventArgs e)
         {
             if (Nimetus_txt.Text.Trim() != string.Empty && Kogus_txt.Text.Trim() != string.Empty && Hind_txt.Text.Trim() != string.Empty)
             {
@@ -105,7 +73,7 @@ namespace WindowsFormsApp_TARpv23
 
                     if (rowsAffected > 0)
                     {
-                        MessageBox.Show("Kirje kustutamine nnestus!");
+                        MessageBox.Show("Kirje kustutamine 천nnestus!");
                     }
                     else
                     {
@@ -123,21 +91,87 @@ namespace WindowsFormsApp_TARpv23
             }
             else
             {
-                MessageBox.Show("Kustutamiseks dw!");
+                MessageBox.Show("Kustutamiseks t채itke k천ik v채ljad!");
             }
         }
-        private void button2_Click_1(object sender, EventArgs e)
+        int ID = 0;
+
+        private void dataGridViewl_RolHeaderMouseClick(object sender,
+            DataGridViewCellMouseEventArgs e)
+        {
+            ID = (int)dataGridView1.Rows[e.RowIndex].Cells["Id"].Value;
+            Nimetus_txt.Text = dataGridView1.Rows[e.RowIndex + 1].Cells["Nimetus"].Value.ToString();
+            Kogus_txt.Text = dataGridView1.Rows[e.RowIndex + 1].Cells["Kogus"].Value.ToString();
+            Hind_txt.Text = dataGridView1.Rows[e.RowIndex + 1].Cells["Hind"].Value.ToString();
+        }
+
+        private void Nimetus_txt_TextChanged(object sender, EventArgs e)
         {
 
         }
 
-        int ID = 0;
-        private void dataGridView1_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        OpenFileDialog open;
+        SaveFileDialog save;
+
+        private void Pild_txt_Click(object sender, EventArgs e)
         {
-            ID = (int)dataGridView1.Rows[e.RowIndex].Cells["ID"].Value;
-            Nimetus_txt.Text = dataGridView1.Rows[e.RowIndex].Cells["Nimetus"].Value.ToString();
-            Kogus_txt.Text = dataGridView1.Rows[e.RowIndex].Cells["Kogus"].Value.ToString();
-            Hind_txt.Text = dataGridView1.Rows[e.RowIndex].Cells["Hind"].Value.ToString();
+            open = new OpenFileDialog();
+            open.InitialDirectory = @"C:\Users\opilane\Pictures\";
+            open.Multiselect = false;
+            open.Filter = "Images Files(*.jpeg;*.png;*.bmp;*.jpg)[*.jpeg;*.png;*.bmp;*.jpg]";
+            FileInfo openfile = new FileInfo(@"C:\Users\opilane\Pictures\" + open.FileName);
+            if (open.ShowDialog() == DialogResult.OK && Nimetus_txt.Text != null)
+            {
+                save = new SaveFileDialog();
+                save.InitialDirectory = Path.GetFullPath(@"..\..\..\Pildid");
+                string extension = Path.GetExtension(open.FileName);
+                save.FileName = Nimetus_txt.Text + extension;
+                save.Filter = "Images" + Path.GetExtension(open.FileName) + "|" + Path.GetExtension(open.FileName);
+                if (save.ShowDialog() == DialogResult.OK && Nimetus_txt != null)
+                {
+                    File.Copy(open.FileName, save.FileName);
+                    pictureBox1.Image = Image.FromFile(save.FileName);
+                }
+
+            }
+            else
+            {
+                MessageBox.Show("Puudub toode nimetus vÃµi ole Cancel vajatatud");
+            }
+        }
+
+        private void Toode_txt_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Uuenda(object sender, EventArgs e)
+        {
+            if (Nimetus_txt.Text.Trim() != string.Empty && Kogus_txt.Text.Trim() != string.Empty && Hind_txt.Text.Trim() !=
+                string.Empty)
+            {
+                try
+                {
+                    conn.Open();
+                    cmd = new SqlCommand("UPDATE Toode SET Nimetus=@toode,,Kogus=@kogus,,Hind=@hind Where Id=@id", conn);
+                    cmd.Parameters.AddWithValue("@id", ID);
+                    cmd.Parameters.AddWithValue("@toode", Nimetus_txt.Text);
+                    cmd.Parameters.AddWithValue("@kogus", Kogus_txt.Text);
+                    cmd.Parameters.AddWithValue("@hind", Hind_txt.Text);
+                    cmd.ExecuteNonQuery();
+
+                    conn.Close();
+                    this.toodeTableAdapter.Fill(this.windowsFormsApp_TARpv23DataSet1.Toode);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Andmebaasiga viga!");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Sisesta andmeid!");
+            }
         }
     }
 }
