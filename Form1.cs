@@ -126,10 +126,18 @@ namespace WindowsFormsApp_TARpv23
                 MessageBox.Show("Kustutamiseks dw!");
             }
         }
-
         private void button2_Click_1(object sender, EventArgs e)
         {
 
+        }
+
+        int ID = 0;
+        private void dataGridView1_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            ID = (int)dataGridView1.Rows[e.RowIndex].Cells["ID"].Value;
+            Nimetus_txt.Text = dataGridView1.Rows[e.RowIndex].Cells["Nimetus"].Value.ToString();
+            Kogus_txt.Text = dataGridView1.Rows[e.RowIndex].Cells["Kogus"].Value.ToString();
+            Hind_txt.Text = dataGridView1.Rows[e.RowIndex].Cells["Hind"].Value.ToString();
         }
     }
 }
